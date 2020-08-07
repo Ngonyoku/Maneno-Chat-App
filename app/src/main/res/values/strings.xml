@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Maneno</string>
+    <string name="create_new_account">Create a new Account</string>
+    <string name="welcome_to_maneno_chat_app">Welcome to Maneno Chat App</string>
+    <string name="display_name">Display Name</string>
+    <string name="email">Email</string>
+    <string name="create_account">Create Account</string>
+    <string name="password">Password</string>
+    <string name="log_out">Log Out</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="log_in">Log In</string>
+    <string name="login_auth_text">Enter a your Email Address and corresponding password</string>
+    <string name="reg_auth_text">Please enter a Valid email Address and strong password</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

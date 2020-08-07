@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "496715395223",
+    "firebase_url": "https://maneno-chat-app.firebaseio.com",
+    "project_id": "maneno-chat-app",
+    "storage_bucket": "maneno-chat-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:496715395223:android:2fad99e824b4b13e8eb9d2",
+        "android_client_info": {
+          "package_name": "com.ngonyoku.maneno"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "496715395223-6dhhjnpj0dk24ulhsle459f5rllkacad.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDijWtzvUo2DFlj5ogyz9Z8serxirgLzeQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "496715395223-6dhhjnpj0dk24ulhsle459f5rllkacad.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

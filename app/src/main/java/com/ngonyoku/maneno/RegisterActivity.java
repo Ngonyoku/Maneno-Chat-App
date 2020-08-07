@@ -16,10 +16,17 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
 
 public class RegisterActivity extends AppCompatActivity {
     //Firebase
     private FirebaseAuth mAuth;
+    private DatabaseReference mDatabaseReference;
 
     //Views
     private Button mCreateBtn;
@@ -64,20 +71,51 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     /*Register New Users*/
-    private void registerUser(String displayName, String email, String password) {
+    private void registerUser(final String displayName, String email, String password) {
         mAuth
                 .createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
+                            FirebaseUser currentUser = mAuth.getCurrentUser();
+                            assert currentUser != null;
+                            String uid = currentUser.getUid();
+                            /*Update User Profile Details*/
+//                            currentUser.updateProfile(
+//                                    new UserProfileChangeRequest.Builder()
+//                                            .setDisplayName(displayName)
+//                                            .build()
+//                            );
+                            mDatabaseReference = FirebaseDatabase
+                                    .getInstance()
+                                    .getReference()
+                                    .child(getString(R.string.db_node_users))
+                                    .child(uid)
+                            ;
+
+                            HashMap<String, String> userMap = new HashMap<>();
+                            userMap.put("name", displayName);
+                            userMap.put("status", "Hey there, am using Maneno Chat App");
+                            userMap.put("image", "default");
+                            userMap.put("thumb_image", "default");
+
+                            mDatabaseReference.setValue(userMap)
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                startActivity(
+                                                        new Intent(RegisterActivity.this, MainActivity.class)
+                                                                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                                );
+                                                Toast.makeText(RegisterActivity.this, "Welcome to " + getString(R.string.app_name), Toast.LENGTH_LONG).show();
+                                                finish();
+                                            }
+                                        }
+                                    })
+                            ;
                             showProgress(false);
-                            startActivity(
-                                    new Intent(RegisterActivity.this, MainActivity.class)
-                                            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                            );
-                            Toast.makeText(RegisterActivity.this, "Welcome to " + getString(R.string.app_name), Toast.LENGTH_LONG).show();
-                            finish();
                         } else {
                             Toast.makeText(RegisterActivity.this, task.getException().getMessage(), Toast.LENGTH_LONG).show();
                             showProgress(false);

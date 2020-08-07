@@ -1,23 +1,32 @@
 package com.ngonyoku.maneno;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.viewpager.widget.ViewPager;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
+import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity {
+    //Firebase
     private FirebaseAuth mAuth;
+
+    //Views
     private Toolbar mToolbar;
+    private ViewPager mViewPager;
+    private TabLayout mTabLayout;
+
+    private SectionsPagerAdapter mSectionsPagerAdapter;
+    private FriendsFragment mFriendsFragment;
+    private ChatsFragment mChatsFragment;
+    private RequestFragment mRequestFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +36,18 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         mToolbar = findViewById(R.id.main_page_toolbar);
+        mViewPager = findViewById(R.id.main_tab_pager);
+        mTabLayout = findViewById(R.id.main_tabs);
+        mChatsFragment = new ChatsFragment();
+        mFriendsFragment = new FriendsFragment();
+        mRequestFragment = new RequestFragment();
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), 0);
+
+        mTabLayout.setupWithViewPager(mViewPager);
+        mSectionsPagerAdapter.addFragment(mRequestFragment, getString(R.string.requests));
+        mSectionsPagerAdapter.addFragment(mChatsFragment, getString(R.string.chats));
+        mSectionsPagerAdapter.addFragment(mFriendsFragment, getString(R.string.friends));
+        mViewPager.setAdapter(mSectionsPagerAdapter);
 
         setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle(getString(R.string.app_name));

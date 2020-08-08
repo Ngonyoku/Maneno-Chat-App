@@ -79,6 +79,9 @@ public class MainActivity extends AppCompatActivity {
                 mAuth.signOut();
                 sendToStartActivity();
                 return true;
+            case R.id.main_settings_btn:
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

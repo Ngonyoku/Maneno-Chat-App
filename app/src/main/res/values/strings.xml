@@ -17,4 +17,12 @@
     <string name="chats">Chats</string>
     <string name="friends">Friends</string>
     <string name="db_node_users">users</string>
+    <string name="default_status">Hey there I\'m Using Maneno Chat App</string>
+    <string name="update_status">Update Status</string>
+    <string name="change_image">Change Image</string>
+    <string name="db_field_name">name</string>
+    <string name="db_field_status">status</string>
+    <string name="db_field_image">image</string>
+    <string name="db_field_thumb_Image">thumb_image</string>
+    <string name="save_changes">Save changes</string>
 </resources>

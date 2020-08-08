@@ -81,7 +81,7 @@ public class RegisterActivity extends AppCompatActivity {
                             FirebaseUser currentUser = mAuth.getCurrentUser();
                             assert currentUser != null;
                             String uid = currentUser.getUid();
-                            /*Update User Profile Details*/
+                            /*Update User ProfilegetString(R.string.db_field_name) Details*/
 //                            currentUser.updateProfile(
 //                                    new UserProfileChangeRequest.Builder()
 //                                            .setDisplayName(displayName)
@@ -95,10 +95,10 @@ public class RegisterActivity extends AppCompatActivity {
                             ;
 
                             HashMap<String, String> userMap = new HashMap<>();
-                            userMap.put("name", displayName);
-                            userMap.put("status", "Hey there, am using Maneno Chat App");
-                            userMap.put("image", "default");
-                            userMap.put("thumb_image", "default");
+                            userMap.put(getString(R.string.db_field_name), displayName);
+                            userMap.put(getString(R.string.db_field_status), getString(R.string.default_status));
+                            userMap.put(getString(R.string.db_field_image), "default");
+                            userMap.put(getString(R.string.db_field_thumb_Image), "default");
 
                             mDatabaseReference.setValue(userMap)
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {

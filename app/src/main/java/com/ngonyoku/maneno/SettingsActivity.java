@@ -17,6 +17,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -37,6 +38,7 @@ import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -48,7 +50,7 @@ public class SettingsActivity extends AppCompatActivity {
     //Firebase
     private DatabaseReference mUserDatabaseRef;
     private FirebaseUser mCurrentUser;
-    private StorageReference mProfileImageRef, mStorageReference;
+    private StorageReference mProfileImageRef;
 
     //Views
     private CircleImageView mDisplayImage;
@@ -121,36 +123,11 @@ public class SettingsActivity extends AppCompatActivity {
                 String status = snapshot.child(getString(R.string.db_field_status)).getValue().toString();
                 String thumb_image = snapshot.child(getString(R.string.db_field_thumb_Image)).getValue().toString();
 
-                mStorageReference = FirebaseStorage
-                        .getInstance()
-                        .getReference()
-                        .child("profile_images/" + mCurrentUser.getUid() + ".jpg")
-                ;
-                try {
-                    final File localFile = File.createTempFile("profile_pic", "jpg");
-                    mStorageReference.getFile(localFile)
-                            .addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                                @Override
-                                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                                    Bitmap imageBitmap = BitmapFactory.decodeFile(localFile.getAbsolutePath());
-                                    ((ImageView) mDisplayImage).setImageBitmap(imageBitmap);
-                                }
-                            })
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Toast.makeText(SettingsActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                            })
-                    ;
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-//                Picasso.get()
-//                        .load(image.trim())
-//                        .into(mDisplayImage)
-//                ; /*Display the Profile Image*/
+                Picasso.get()
+                        .load(image.trim())
+                        .into(mDisplayImage)
+                ; /*Display the Profile Image*/
                 mDisplayName.setText(name); /*Display the Name*/
                 mStatus.setText(status); /*Display the status*/
 
@@ -185,38 +162,46 @@ public class SettingsActivity extends AppCompatActivity {
                 assert result != null;
                 showProgress(true);
                 Uri resultUri = result.getUri(); /*Returns the Cropped Image*/
-                StorageReference filepath = mProfileImageRef.child("profile_images").child(mCurrentUser.getUid() + ".jpg");
-                filepath
-                        .putFile(resultUri)
-                        .addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                final StorageReference filepath = mProfileImageRef.child("profile_images").child(mCurrentUser.getUid() + ".jpg");
+
+                filepath.putFile(resultUri)
+                        .continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
                             @Override
-                            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                                return filepath.getDownloadUrl();
+                            }
+                        })
+                        .addOnCompleteListener(new OnCompleteListener<Uri>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Uri> task) {
                                 if (task.isSuccessful()) {
-                                    /*We store the image link in the realtime database*/
-                                    String downloadUrl = task.getResult().toString();/*Get Url of image*/
-                                    Log.d(TAG, "onComplete: imageUrl => " + downloadUrl);
+                                    Uri downloadUri = task.getResult();
+                                    assert downloadUri != null;
+                                    String url = downloadUri.toString();
                                     mUserDatabaseRef
                                             .child(getString(R.string.db_field_image))
-                                            .setValue(downloadUrl) /*Store the image url to the database in the "image" field*/
+                                            .setValue(url)
                                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
                                                     if (task.isSuccessful()) {
-                                                        showProgress(false);
-                                                        Toast.makeText(SettingsActivity.this, "Profile image updated", Toast.LENGTH_SHORT).show();
+                                                        Toast.makeText(SettingsActivity.this, "Profile photo updated", Toast.LENGTH_SHORT).show();
+                                                    } else {
+                                                        Toast.makeText(SettingsActivity.this, Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
                                                     }
+                                                    showProgress(false);
                                                 }
-                                            })
-                                    ;
+                                            });
                                 } else {
-                                    Toast.makeText(SettingsActivity.this, "" + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(SettingsActivity.this, Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
                                 }
                             }
                         })
                 ;
-
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                assert result != null;
                 Exception error = result.getError();
+                Toast.makeText(this, error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
     }

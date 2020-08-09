@@ -23,7 +23,7 @@
                 android:layout_gravity="center"
                 android:layout_margin="16dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_user" />
+                android:src="@color/colorPrimaryLight" />
 
             <TextView
                 android:id="@+id/settings_display_name"

@@ -25,4 +25,5 @@
     <string name="db_field_image">image</string>
     <string name="db_field_thumb_Image">thumb_image</string>
     <string name="save_changes">Save changes</string>
+    <string name="users">Users</string>
 </resources>

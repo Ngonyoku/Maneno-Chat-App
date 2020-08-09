@@ -82,6 +82,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.main_settings_btn:
                 startActivity(new Intent(MainActivity.this, SettingsActivity.class));
                 return true;
+            case R.id.main_all_users_btn:
+                startActivity(new Intent(MainActivity.this, UsersActivity.class));
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

@@ -36,11 +36,13 @@ import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import id.zelory.compressor.Compressor;
 
 public class SettingsActivity extends AppCompatActivity {
     private static final String TAG = "SettingsActivity";
@@ -151,6 +153,7 @@ public class SettingsActivity extends AppCompatActivity {
             CropImage
                     .activity(imageUri)
                     .setAspectRatio(1, 1)
+                    .setMinCropWindowSize(500, 500)
                     .start(this)
             ;
         }
@@ -162,48 +165,110 @@ public class SettingsActivity extends AppCompatActivity {
                 assert result != null;
                 showProgress(true);
                 Uri resultUri = result.getUri(); /*Returns the Cropped Image*/
-                final StorageReference filepath = mProfileImageRef.child("profile_images").child(mCurrentUser.getUid() + ".jpg");
 
-                filepath.putFile(resultUri)
-                        .continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-                            @Override
-                            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-                                return filepath.getDownloadUrl();
-                            }
-                        })
-                        .addOnCompleteListener(new OnCompleteListener<Uri>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Uri> task) {
-                                if (task.isSuccessful()) {
-                                    Uri downloadUri = task.getResult();
-                                    assert downloadUri != null;
-                                    String url = downloadUri.toString();
-                                    mUserDatabaseRef
-                                            .child(getString(R.string.db_field_image))
-                                            .setValue(url)
-                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-                                                    if (task.isSuccessful()) {
-                                                        Toast.makeText(SettingsActivity.this, "Profile photo updated", Toast.LENGTH_SHORT).show();
-                                                    } else {
-                                                        Toast.makeText(SettingsActivity.this, Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
-                                                    }
-                                                    showProgress(false);
-                                                }
-                                            });
-                                } else {
-                                    Toast.makeText(SettingsActivity.this, Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        })
-                ;
+                File thumb_file = new File(Objects.requireNonNull(resultUri.getPath()));/*Create a File*/
+                try {
+                    /*-------Compress our Image to Bitmap-------*/
+                    Bitmap thumb_bitmap = new Compressor(this)
+                            .setMaxWidth(200)
+                            .setMaxHeight(200)
+                            .setQuality(75)
+                            .compressToBitmap(thumb_file);
+
+                    /*------We push the Bitmap file to Firebase-----*/
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    thumb_bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    byte[] thumb_byte = baos.toByteArray();
+
+                    uploadProfilePic(resultUri, thumb_byte);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 assert result != null;
                 Exception error = result.getError();
                 Toast.makeText(this, error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private void uploadProfilePic(Uri imageUri, byte[] thumb_byte) {
+        final StorageReference filepath = mProfileImageRef.child(getString(R.string.storage_profile_images)).child(mCurrentUser.getUid() + ".jpg");
+        final StorageReference thumb_filepath = mProfileImageRef.child(getString(R.string.storage_profile_images)).child(getString(R.string.storage_thumbs)).child(mCurrentUser.getUid() + ".jpg");
+
+        /*-------Upload Thumbnail------------*/
+        thumb_filepath.putBytes(thumb_byte)
+                .continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                    @Override
+                    public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                        return thumb_filepath.getDownloadUrl();
+                    }
+                })
+                .addOnCompleteListener(new OnCompleteListener<Uri>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Uri> task) {
+                        if (task.isSuccessful()) {
+                            Uri downloadUri = task.getResult();
+                            assert downloadUri != null;
+                            String thumbnailUrl = downloadUri.toString();
+                            mUserDatabaseRef
+                                    .child(getString(R.string.db_field_thumb_Image))
+                                    .setValue(thumbnailUrl)
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                Toast.makeText(SettingsActivity.this, "", Toast.LENGTH_SHORT).show();
+                                            } else {
+                                                Toast.makeText(SettingsActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    })
+                            ;
+                        } else {
+                            Toast.makeText(SettingsActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
+        /*-------Upload Profile Pic----------*/
+        filepath.putFile(imageUri)
+                .continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                    @Override
+                    public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                        return filepath.getDownloadUrl();
+                    }
+                })
+                .addOnCompleteListener(new OnCompleteListener<Uri>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Uri> task) {
+                        if (task.isSuccessful()) {
+                            Uri downloadUri = task.getResult();
+                            assert downloadUri != null;
+                            String imageUrl = downloadUri.toString(); /*Url of the Image*/
+                            mUserDatabaseRef
+                                    .child(getString(R.string.db_field_image))
+                                    .setValue(imageUrl)
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                Toast.makeText(SettingsActivity.this, "Profile photo updated", Toast.LENGTH_SHORT).show();
+                                            } else {
+                                                Toast.makeText(SettingsActivity.this, Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                            showProgress(false);
+                                        }
+                                    })
+                            ;
+                        } else {
+                            Toast.makeText(SettingsActivity.this, Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+        ;
     }
 
     private void showProgress(boolean show) {

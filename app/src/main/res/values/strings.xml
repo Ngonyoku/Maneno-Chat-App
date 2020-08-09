@@ -26,4 +26,6 @@
     <string name="db_field_thumb_Image">thumb_image</string>
     <string name="save_changes">Save changes</string>
     <string name="users">Users</string>
+    <string name="storage_profile_images">profile_images</string>
+    <string name="storage_thumbs">thumbs</string>
 </resources>

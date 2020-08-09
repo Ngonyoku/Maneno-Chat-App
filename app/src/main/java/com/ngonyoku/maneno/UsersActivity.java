@@ -76,6 +76,7 @@ public class UsersActivity extends AppCompatActivity {
             protected void onBindViewHolder(@NonNull UsersViewHolder holder, int position, @NonNull Users model) {
                 holder.mDisplayName.setText(model.getName());
                 holder.mStatus.setText(model.getStatus());
+                String image = (model.getThumb_image() == null) ? model.getImage() : model.getThumb_image();
                 Picasso.get()
                         .load(model.getImage())
                         .fit()

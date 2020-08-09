@@ -97,8 +97,8 @@ public class RegisterActivity extends AppCompatActivity {
                             HashMap<String, String> userMap = new HashMap<>();
                             userMap.put(getString(R.string.db_field_name), displayName);
                             userMap.put(getString(R.string.db_field_status), getString(R.string.default_status));
-                            userMap.put(getString(R.string.db_field_image), "default");
-                            userMap.put(getString(R.string.db_field_thumb_Image), "default");
+                            userMap.put(getString(R.string.db_field_image), "");
+                            userMap.put(getString(R.string.db_field_thumb_Image), "");
 
                             mDatabaseReference.setValue(userMap)
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {

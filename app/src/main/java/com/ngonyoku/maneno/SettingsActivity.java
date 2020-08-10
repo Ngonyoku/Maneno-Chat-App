@@ -27,6 +27,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 
@@ -73,12 +75,8 @@ public class SettingsActivity extends AppCompatActivity {
         mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
         assert mCurrentUser != null;
         String current_uid = mCurrentUser.getUid();
-        mUserDatabaseRef = FirebaseDatabase
-                .getInstance()
-                .getReference()
-                .child(getString(R.string.db_node_users))
-                .child(current_uid)
-        ;
+        mUserDatabaseRef = FirebaseDatabase.getInstance().getReference().child(getString(R.string.db_node_users)).child(current_uid);
+        mUserDatabaseRef.keepSynced(true); /*Enable Offline capabilities in this Node*/
 
         mChangeImageBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -116,16 +114,29 @@ public class SettingsActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 /*The data is retrieved and saved in the following strings*/
                 String name = snapshot.child(getString(R.string.db_field_name)).getValue().toString();
-                String image = snapshot.child(getString(R.string.db_field_image)).getValue().toString();
+                final String image = snapshot.child(getString(R.string.db_field_image)).getValue().toString();
                 String status = snapshot.child(getString(R.string.db_field_status)).getValue().toString();
                 String thumb_image = snapshot.child(getString(R.string.db_field_thumb_Image)).getValue().toString();
 
-                String imageUrl = (image.isEmpty()) ? thumb_image : image;
+                final String imageUrl = (image.isEmpty()) ? thumb_image : image;
                 if (!image.isEmpty()) {
-                    Picasso.get()
+                    Picasso/*Display the Profile Image*/
+                            .get()
                             .load(imageUrl)
-                            .into(mDisplayImage)
-                    ; /*Display the Profile Image*/
+                            .networkPolicy(NetworkPolicy.OFFLINE)/*Retrieve Image from Offline*/
+                            .into(mDisplayImage, new Callback() {
+                                @Override
+                                public void onSuccess() {
+                                    /*If image was retrieved successfully from offline, then ...*/
+                                }
+
+                                @Override
+                                public void onError(Exception e) {
+                                    /*... else, We should retrieve the Image online.*/
+                                    Picasso.get().load(imageUrl).into(mDisplayImage);
+                                }
+                            })
+                    ;
                 }
                 mDisplayName.setText(name); /*Display the Name*/
                 mStatus.setText(status); /*Display the status*/

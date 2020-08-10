@@ -21,6 +21,8 @@ import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -47,6 +49,7 @@ public class UsersActivity extends AppCompatActivity {
         setContentView(R.layout.activity_users);
 
         mUsersDatabaseRef = FirebaseDatabase.getInstance().getReference().child(getString(R.string.db_node_users));
+        mUsersDatabaseRef.keepSynced(true);
 
         mToolbar = findViewById(R.id.users_appBar);
         mUsersList = findViewById(R.id.users_list);
@@ -82,17 +85,30 @@ public class UsersActivity extends AppCompatActivity {
             }
 
             @Override
-            protected void onBindViewHolder(@NonNull UsersViewHolder holder, int position, @NonNull final Users model) {
+            protected void onBindViewHolder(@NonNull final UsersViewHolder holder, int position, @NonNull final Users model) {
                 holder.mDisplayName.setText(model.getName());
                 holder.mStatus.setText(model.getStatus());
-                String image = (model.getThumb_image() == null) ? model.getImage() : model.getThumb_image();
+                final String image = (model.getThumb_image() == null) ? model.getImage() : model.getThumb_image();
                 final String user_id = getRef(position).getKey(); /*Returns the key of the current node under users node(in this case the Users Id)*/
                 if (!image.isEmpty()) {
-                    Picasso.get()
+                    Picasso
+                            .get()
                             .load(image)
                             .fit()
+                            .networkPolicy(NetworkPolicy.OFFLINE)
                             .placeholder(R.color.colorPrimaryLight)
-                            .into(holder.mImageView)
+                            .into(holder.mImageView, new Callback() {
+                                @Override
+                                public void onSuccess() {
+                                    /*If image was retrieved successfully from offline, then ...*/
+                                }
+
+                                @Override
+                                public void onError(Exception e) {
+                                    /*... else, We should retrieve the Image online.*/
+                                    Picasso.get().load(image).fit().placeholder(R.color.colorPrimaryLight).into(holder.mImageView);
+                                }
+                            })
                     ;
                 }
                 showProgress(false);

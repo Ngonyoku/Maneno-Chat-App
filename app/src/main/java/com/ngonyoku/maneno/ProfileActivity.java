@@ -21,6 +21,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.text.DateFormat;
@@ -65,13 +67,24 @@ public class ProfileActivity extends AppCompatActivity {
             user_id = getIntent().getStringExtra(UsersActivity.KEY_USER_ID);
             mDisplayName.setText(getIntent().getStringExtra(UsersActivity.KEY_DISPLAY_NAME));
             mStatus.setText(getIntent().getStringExtra(UsersActivity.KEY_STATUS));
-            String imageUrl = getIntent().getStringExtra(UsersActivity.KEY_IMAGE_URL);
+            final String imageUrl = getIntent().getStringExtra(UsersActivity.KEY_IMAGE_URL);
             if (!imageUrl.isEmpty()) {
                 Picasso
                         .get()
                         .load(imageUrl)
+                        .networkPolicy(NetworkPolicy.OFFLINE)
                         .fit()
-                        .into(mDisplayImage)
+                        .into(mDisplayImage, new Callback() {
+                            @Override
+                            public void onSuccess() {
+
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                Picasso.get().load(imageUrl).fit().into(mDisplayImage);
+                            }
+                        })
                 ;
             } else {
                 Toast.makeText(this, "User doesn't have an Image", Toast.LENGTH_SHORT).show();

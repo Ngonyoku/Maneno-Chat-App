@@ -10,4 +10,6 @@
     <color name="colorAccent">#FF9800</color>
 
     <color name="colorBackgroundWhite">#EDEDED</color>
+    <color name="colorRed">#F42323</color>
+    <color name="colorGreen">#4CAF50</color>
 </resources>

@@ -30,4 +30,12 @@
     <string name="storage_thumbs">thumbs</string>
     <string name="add_friend">Add Friend</string>
     <string name="db_node_friend_request">friend_request</string>
+    <string name="received">received</string>
+    <string name="db_field_request_type">request_type</string>
+    <string name="sent">sent</string>
+    <string name="cancel_friend_request">Cancel Friend Request</string>
+    <string name="request_sent">request_sent</string>
+    <string name="not_friend">not_friend</string>
+    <string name="accept_friend_request">Accept Friend Request</string>
+    <string name="request_received">request_received</string>
 </resources>

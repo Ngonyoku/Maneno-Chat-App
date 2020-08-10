@@ -23,8 +23,7 @@
                 android:layout_height="200dp"
                 android:layout_gravity="center"
                 android:layout_margin="16dp"
-                android:scaleType="centerCrop"
-                android:src="@color/colorPrimaryLight" />
+                android:scaleType="centerCrop" />
 
             <TextView
                 android:id="@+id/settings_display_name"
@@ -33,11 +32,11 @@
                 android:layout_gravity="center"
                 android:layout_margin="16dp"
                 android:fontFamily="serif"
-                android:text="@string/display_name"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:textColor="@android:color/white"
                 android:textSize="24sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                tools:text="@string/display_name" />
 
             <TextView
                 android:id="@+id/settings_status"
@@ -46,10 +45,10 @@
                 android:layout_gravity="center"
                 android:layout_margin="16dp"
                 android:fontFamily="serif"
-                android:text="@string/default_status"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="@color/colorPrimaryLight"
-                android:textSize="20sp" />
+                android:textSize="20sp"
+                tools:text="@string/default_status" />
 
             <ProgressBar
                 android:id="@+id/settings_progressBar"

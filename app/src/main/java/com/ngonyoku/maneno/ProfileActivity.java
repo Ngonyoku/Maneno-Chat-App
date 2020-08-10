@@ -23,12 +23,15 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import java.text.DateFormat;
+import java.util.Date;
+
 public class ProfileActivity extends AppCompatActivity {
     private static final String TAG = "ProfileActivity";
 
     //Firebase
     private DatabaseReference mUsersDatabaseRef;
-    private DatabaseReference mFriendRequestRef;
+    private DatabaseReference mFriendRequestRef, mFriendRef;
     private FirebaseUser mCurrentUser;
 
     //Views
@@ -46,6 +49,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         mUsersDatabaseRef = FirebaseDatabase.getInstance().getReference().child(getString(R.string.db_node_users));
         mFriendRequestRef = FirebaseDatabase.getInstance().getReference().child(getString(R.string.db_node_friend_request));
+        mFriendRef = FirebaseDatabase.getInstance().getReference().child(getString(R.string.db_node_friends));
         mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         mDisplayName = findViewById(R.id.profile_display_name);
@@ -74,7 +78,7 @@ public class ProfileActivity extends AppCompatActivity {
             }
         }
 
-        /*-------------------- Detect if a user is a Friend or not-----------------------*/
+        /*--------------- Detect if a user has been send a friend Request or not---------------*/
         mFriendRequestRef
                 .child(mCurrentUser.getUid())
                 .addListenerForSingleValueEvent(new ValueEventListener() {
@@ -101,7 +105,27 @@ public class ProfileActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(ProfileActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                })
+        ;
 
+        /*------------------Detect if a User is already a Friend or Not-----------------------*/
+        mFriendRef
+                .child(mCurrentUser.getUid())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.hasChild(user_id)) {
+                            mCurrent_state = getString(R.string.friends); /*Change the current state to request_sent*/
+                            mAddFriendButton.setText(R.string.unfriend);
+                            mAddFriendButton.setBackground(getDrawable(R.color.colorRed));
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(ProfileActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 })
         ;
@@ -172,6 +196,61 @@ public class ProfileActivity extends AppCompatActivity {
                                                 }
                                             })
                                     ;
+                                }
+                            })
+                    ;
+                }
+
+                /*Receive Friend Request*/
+                if (mCurrent_state.equals(getString(R.string.request_received))) {
+                    final String currentDate = DateFormat.getDateTimeInstance().format(new Date());
+
+                    mFriendRef/*Add the user as a Friend in the friends node in the database*/
+                            .child(mCurrentUser.getUid())
+                            .child(user_id)
+                            .setValue(currentDate)
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        mFriendRef/*Add the user as a Friend in the friends node in the database*/
+                                                .child(user_id)
+                                                .child(mCurrentUser.getUid())
+                                                .setValue(currentDate)
+                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        mFriendRequestRef
+                                                                .child(mCurrentUser.getUid())
+                                                                .child(user_id)
+                                                                .removeValue()
+                                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                    @Override
+                                                                    public void onSuccess(Void aVoid) {
+                                                                        mFriendRequestRef
+                                                                                .child(user_id)
+                                                                                .child(mCurrentUser.getUid())
+                                                                                .removeValue()
+                                                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                                    @Override
+                                                                                    public void onSuccess(Void aVoid) {
+                                                                                        mAddFriendButton.setEnabled(true);
+                                                                                        mCurrent_state = getString(R.string.friends); /*Change the current state to request_sent*/
+                                                                                        mAddFriendButton.setText(R.string.unfriend);
+                                                                                        mAddFriendButton.setBackground(getDrawable(R.color.colorRed));
+                                                                                        Toast.makeText(ProfileActivity.this, "You are now Friends", Toast.LENGTH_SHORT).show();
+                                                                                    }
+                                                                                })
+                                                                        ;
+                                                                    }
+                                                                })
+                                                        ;
+                                                    }
+                                                })
+                                        ;
+                                    } else {
+                                        Toast.makeText(ProfileActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
                                 }
                             })
                     ;

@@ -38,4 +38,6 @@
     <string name="not_friend">not_friend</string>
     <string name="accept_friend_request">Accept Friend Request</string>
     <string name="request_received">request_received</string>
+    <string name="db_node_friends">friends</string>
+    <string name="unfriend">Unfriend</string>
 </resources>

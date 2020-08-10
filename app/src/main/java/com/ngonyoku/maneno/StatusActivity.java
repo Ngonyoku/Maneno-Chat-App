@@ -58,7 +58,7 @@ public class StatusActivity extends AppCompatActivity {
 
         Intent status = getIntent();
         if (status.getExtras() != null) {
-            mStatus.getEditText().setText(status.getStringExtra(SettingsActivity.STATUS_DATA));
+            mStatus.getEditText().setText(status.getStringExtra(SettingsActivity.KEY_STATUS_DATA));
         }
 
         mSaveBtn.setOnClickListener(new View.OnClickListener() {

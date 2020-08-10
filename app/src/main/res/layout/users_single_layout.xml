@@ -19,6 +19,7 @@
             android:layout_height="100dp"
             android:padding="5dp"
             android:scaleType="centerCrop"
+            android:src="@color/colorPrimaryLight"
             tools:src="@tools:sample/avatars" />
 
         <LinearLayout

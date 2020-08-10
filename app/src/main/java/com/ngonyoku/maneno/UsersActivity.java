@@ -6,12 +6,15 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -23,6 +26,12 @@ import com.squareup.picasso.Picasso;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class UsersActivity extends AppCompatActivity {
+    private static final String TAG = "UsersActivity";
+    public static final int PROFILE_REQUEST_CODE = 3;
+    public static final String KEY_USER_ID = "com.ngonyoku.maneno.USER_ID";
+    public static final String KEY_DISPLAY_NAME = "com.ngonyoku.maneno.KEY_DISPLAY_NAME";
+    public static final String KEY_IMAGE_URL = "com.ngonyoku.maneno.KEY_IMAGE_URL";
+    public static final String KEY_STATUS = "com.ngonyoku.maneno.KEY_STATUS";
     //Firebase
     private DatabaseReference mUsersDatabaseRef;
 
@@ -73,17 +82,35 @@ public class UsersActivity extends AppCompatActivity {
             }
 
             @Override
-            protected void onBindViewHolder(@NonNull UsersViewHolder holder, int position, @NonNull Users model) {
+            protected void onBindViewHolder(@NonNull UsersViewHolder holder, int position, @NonNull final Users model) {
                 holder.mDisplayName.setText(model.getName());
                 holder.mStatus.setText(model.getStatus());
                 String image = (model.getThumb_image() == null) ? model.getImage() : model.getThumb_image();
-                Picasso.get()
-                        .load(model.getImage())
-                        .fit()
-                        .placeholder(R.color.colorPrimaryLight)
-                        .into(holder.mImageView)
-                ;
+                final String user_id = getRef(position).getKey(); /*Returns the key of the current node under users node(in this case the Users Id)*/
+                if (!image.isEmpty()) {
+                    Picasso.get()
+                            .load(image)
+                            .fit()
+                            .placeholder(R.color.colorPrimaryLight)
+                            .into(holder.mImageView)
+                    ;
+                }
                 showProgress(false);
+
+                holder.mView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivityForResult(
+                                new Intent(getApplicationContext(), ProfileActivity.class)
+                                        .putExtra(KEY_USER_ID, user_id)
+                                        .putExtra(KEY_DISPLAY_NAME, model.getName())
+                                        .putExtra(KEY_IMAGE_URL, model.getImage())
+                                        .putExtra(KEY_STATUS, model.getStatus()),
+                                PROFILE_REQUEST_CODE)
+                        ;
+                        Log.d(TAG, "onClick: userId => " + user_id);
+                    }
+                });
             }
         };
         mFirebaseRecyclerAdapter.startListening();/*Listens to changes in the Database and Updates the List*/
@@ -97,11 +124,14 @@ public class UsersActivity extends AppCompatActivity {
     }
 
     public static class UsersViewHolder extends RecyclerView.ViewHolder {
+        private View mView;
         private CircleImageView mImageView;
         private TextView mDisplayName, mStatus;
 
         public UsersViewHolder(@NonNull View itemView) {
             super(itemView);
+
+            mView = itemView;
 
             mImageView = itemView.findViewById(R.id.user_single_image);
             mDisplayName = itemView.findViewById(R.id.user_single_name);

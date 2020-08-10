@@ -6,21 +6,16 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -29,7 +24,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -47,8 +41,9 @@ import id.zelory.compressor.Compressor;
 public class SettingsActivity extends AppCompatActivity {
     private static final String TAG = "SettingsActivity";
     public static final int STATUS_REQUEST_CODE = 1;
-    public static final String STATUS_DATA = "com.ngonyoku.maneno.STATUS_DATA";
+    public static final String KEY_STATUS_DATA = "com.ngonyoku.maneno.STATUS_DATA";
     private static final int GALLERY_PICK = 2;
+
     //Firebase
     private DatabaseReference mUserDatabaseRef;
     private FirebaseUser mCurrentUser;
@@ -109,7 +104,7 @@ public class SettingsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 startActivityForResult(
                         new Intent(SettingsActivity.this, StatusActivity.class)
-                                .putExtra(STATUS_DATA, mStatusData),
+                                .putExtra(KEY_STATUS_DATA, mStatusData),
                         STATUS_REQUEST_CODE)
                 ;
             }
@@ -125,11 +120,13 @@ public class SettingsActivity extends AppCompatActivity {
                 String status = snapshot.child(getString(R.string.db_field_status)).getValue().toString();
                 String thumb_image = snapshot.child(getString(R.string.db_field_thumb_Image)).getValue().toString();
 
-
-                Picasso.get()
-                        .load(image.trim())
-                        .into(mDisplayImage)
-                ; /*Display the Profile Image*/
+                String imageUrl = (image.isEmpty()) ? thumb_image : image;
+                if (!image.isEmpty()) {
+                    Picasso.get()
+                            .load(imageUrl)
+                            .into(mDisplayImage)
+                    ; /*Display the Profile Image*/
+                }
                 mDisplayName.setText(name); /*Display the Name*/
                 mStatus.setText(status); /*Display the status*/
 
@@ -219,9 +216,7 @@ public class SettingsActivity extends AppCompatActivity {
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
-                                            if (task.isSuccessful()) {
-                                                Toast.makeText(SettingsActivity.this, "", Toast.LENGTH_SHORT).show();
-                                            } else {
+                                            if (!task.isSuccessful()) {
                                                 Toast.makeText(SettingsActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                             }
                                         }

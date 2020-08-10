@@ -28,4 +28,6 @@
     <string name="users">Users</string>
     <string name="storage_profile_images">profile_images</string>
     <string name="storage_thumbs">thumbs</string>
+    <string name="add_friend">Add Friend</string>
+    <string name="db_node_friend_request">friend_request</string>
 </resources>

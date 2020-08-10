@@ -17,7 +17,6 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -29,7 +28,7 @@ public class RegisterActivity extends AppCompatActivity {
     private DatabaseReference mDatabaseReference;
 
     //Views
-    private Button mCreateBtn;
+    private Button mRegisterUserBtn;
     private TextInputLayout mDisplayName, mEmail, mPassword;
     private ProgressBar mProgressBar;
     private Toolbar mToolbar;
@@ -41,7 +40,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        mCreateBtn = findViewById(R.id.reg_create_btn);
+        mRegisterUserBtn = findViewById(R.id.reg_create_btn);
         mDisplayName = findViewById(R.id.reg_display_name);
         mEmail = findViewById(R.id.reg_email);
         mPassword = findViewById(R.id.reg_password);
@@ -53,7 +52,7 @@ public class RegisterActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_back);
 
-        mCreateBtn.setOnClickListener(new View.OnClickListener() {
+        mRegisterUserBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String displayName = mDisplayName.getEditText().getText().toString();
